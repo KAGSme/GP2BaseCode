@@ -1,6 +1,13 @@
 #include "Common.h"
 #include "Graphics.h"
 
+FILE _iob[] = { *stdin, *stdout, *stderr };
+
+extern "C" FILE * __cdecl __iob_func(void)
+{
+	return _iob;
+}
+
 void render() {
 	//Set the clear colour(background)
 	glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
@@ -15,9 +22,20 @@ void render() {
 	//begin drawing triangles
 	glBegin(GL_TRIANGLES);
 	glColor3f(1.0f, 0.0f, 0.0f); //color of vertices
-	glVertex3f(0.0f, 1.0f, 0.0f);
+	glVertex3f(-1.0f, 1.0f, 0.0f);
+	glColor3f(1.0f, 1.0f, 0.0f);
 	glVertex3f(-1.0f, -1.0f, 0.0f);
+	glColor3f(1.0f, 1.0f, 1.0f);
 	glVertex3f(1.0f, -1.0f, 0.0f);
+	glEnd();
+
+	glBegin(GL_TRIANGLES);
+	glColor3f(1.0f, 0.0f, 0.0f); //color of vertices
+	glVertex3f(-2.0f, 1.0f, 0.0f);
+	glColor3f(1.0f, 1.0f, 0.0f);
+	glVertex3f(-2.0f, -1.0f, 0.0f);
+	glColor3f(1.0f, 1.0f, 1.0f);
+	glVertex3f(0.0f, -1.0f, 0.0f);
 	glEnd();
 }
 
