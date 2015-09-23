@@ -8,6 +8,9 @@ extern "C" FILE * __cdecl __iob_func(void)
 	return _iob;
 }
 
+float trianglePosx = 0;
+float trianglePosy = 0;
+
 void render() {
 	//Set the clear colour(background)
 	glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
@@ -22,31 +25,32 @@ void render() {
 	//begin drawing triangles
 	glBegin(GL_TRIANGLES);
 	glColor3f(1.0f, 0.0f, 0.0f); //color of vertices
-	glVertex3f(-1.0f, 1.0f, 0.0f);
+	glVertex3f((-2.0f + trianglePosx), (1.0f + trianglePosy), 0.0f);
 	glColor3f(1.0f, 1.0f, 0.0f);
-	glVertex3f(-1.0f, -1.0f, 0.0f);
+	glVertex3f((-2.0f + trianglePosx), (-1.0f + trianglePosy), 0.0f);
 	glColor3f(1.0f, 1.0f, 1.0f);
-	glVertex3f(1.0f, -1.0f, 0.0f);
+	glVertex3f((0.0f + trianglePosx), (-1.0f + trianglePosy), 0.0f);
 	glEnd();
 
-	glBegin(GL_TRIANGLES);
+	glBegin(GL_QUADS);
 	glColor3f(1.0f, 0.0f, 0.0f); //color of vertices
-	glVertex3f(-2.0f, 1.0f, 0.0f);
+	glVertex3f((2.0f + trianglePosx), (1.0f + trianglePosy), 0.0f);
 	glColor3f(1.0f, 1.0f, 0.0f);
-	glVertex3f(-2.0f, -1.0f, 0.0f);
+	glVertex3f((2.0f + trianglePosx), (-1.0f + trianglePosy), 0.0f);
 	glColor3f(1.0f, 1.0f, 1.0f);
-	glVertex3f(0.0f, -1.0f, 0.0f);
+	glVertex3f((0.0f + trianglePosx), (-1.0f + trianglePosy), 0.0f);
+	glVertex3f((0.0f + trianglePosx), (1.0f + trianglePosy), 0.0f);
 	glEnd();
 }
 
 void update() {
-
 }
-
-bool run = true;
 
 int main(int argc, char * arg[])
 {
+
+	bool run = true;
+	bool pause = false;
 	// init everything - SDL, if it is nonzero we have a problem
 	if (SDL_Init(SDL_INIT_EVERYTHING) != 0)
 	{
@@ -82,6 +86,22 @@ int main(int argc, char * arg[])
 			if (event.type == SDL_QUIT || event.type == SDL_WINDOWEVENT_CLOSE) {
 				//set pur boolean which controls the loop to false
 				run = false;
+			}
+			if (event.type == SDL_KEYDOWN) {
+				switch (event.key.keysym.sym) {
+				case SDLK_LEFT:
+					trianglePosx += -0.1f;
+					break;
+				case SDLK_RIGHT:
+					trianglePosx += 0.1f;
+					break;
+				case SDLK_UP:
+					trianglePosy += 0.1f;
+					break;
+				case SDLK_DOWN:
+					trianglePosy += -0.1f;
+					break;
+				}
 			}
 		}
 
