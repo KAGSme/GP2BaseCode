@@ -6,6 +6,11 @@ float verts[] = { 0.0f, 1.0f, 0.0f, //Top
 1.0f, -1.0f, 0.0f //bottome right
 };
 
+float vertsM[] = { 1.0f, 1.0f, 0.0f, //Top
+0.0f, -1.0f, 0.0f, //bottom Left
+2.0f, -1.0f, 0.0f //bottome right
+};
+
 GLuint VBO;
 
 FILE _iob[] = { *stdin, *stdout, *stderr };
@@ -36,38 +41,22 @@ void render() {
 	glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
 	//clear the colour and depth buffer
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-	//switch to model view
+	//Make the new VBO active
 	glBindBuffer(GL_ARRAY_BUFFER, VBO);
 	//Esatblish its 3 coordinates per vertex with zero stride(space between elements)
 	//in array and contain floating point numbers
 	glVertexPointer(3, GL_FLOAT, 0, NULL);
 	//Establish array contains vertices(not normals, colours, texture coords etc)
 	glEnableClientState(GL_VERTEX_ARRAY);
-
+	//switch to model view
 	glMatrixMode(GL_MODELVIEW);
 	//reset using identity matrix
 	glLoadIdentity();
 	//translate to -5 on z axis
 	glTranslatef(0.0f, 0.0f, -5.0f);
-	//begin drawing triangles
-	glBegin(GL_TRIANGLES);
-	glColor3f(1.0f, 0.0f, 0.0f); //color of vertices
-	glVertex3f((-2.0f + trianglePosx), (1.0f + trianglePosy), 0.0f);
-	glColor3f(1.0f, 1.0f, 0.0f);
-	glVertex3f((-2.0f + trianglePosx), (-1.0f + trianglePosy), 0.0f);
-	glColor3f(1.0f, 1.0f, 1.0f);
-	glVertex3f((0.0f + trianglePosx), (-1.0f + trianglePosy), 0.0f);
-	glEnd();
 
-	glBegin(GL_QUADS);
-	glColor3f(1.0f, 0.0f, 0.0f); //color of vertices
-	glVertex3f((2.0f + trianglePosx), (1.0f + trianglePosy), 0.0f);
-	glColor3f(1.0f, 1.0f, 0.0f);
-	glVertex3f((2.0f + trianglePosx), (-1.0f + trianglePosy), 0.0f);
-	glColor3f(1.0f, 1.0f, 1.0f);
-	glVertex3f((0.0f + trianglePosx), (-1.0f + trianglePosy), 0.0f);
-	glVertex3f((0.0f + trianglePosx), (1.0f + trianglePosy), 0.0f);
-	glEnd();
+	//begin drawing triangles
+	glDrawArrays(GL_TRIANGLES, 0, sizeof(verts) / (3 * sizeof(float)));
 }
 
 void update() {
