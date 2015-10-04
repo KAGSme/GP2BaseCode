@@ -14,3 +14,5 @@
 
 
 #endif
+
+//linker input fix for VS2015 and SDL: legacy_stdio_definitions.lib
