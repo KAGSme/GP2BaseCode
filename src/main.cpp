@@ -7,7 +7,7 @@ Vertex verts[] = {
 	{ -0.5f, 0.5f, 0.5f, 0.0f, 1.0f, 1.0f, 1.0f },//Top Left
 	{ -0.5f, -0.5f, 0.5f, 1.0f, 1.0f, 1.0f, 1.0f }, //bottom Left
 	{ 0.5f, -0.5f, 0.5f, 0.0f, 1.0f, 1.0f, 1.0f }, //bottom right
-	{ 0.5f, 0.5f, 0.5f, 0.0f, 1.0f, 1.0f, 1.0f },//Top Right
+	{ 0.5f, 0.5f, 0.5f, 1.0f, 1.0f, 1.0f, 1.0f },//Top Right
 
 	//back
 	{ -0.5f, 0.5f, -0.5f, 0.0f, 1.0f, 1.0f, 1.0f },//Top Left
@@ -47,8 +47,9 @@ extern "C" FILE * __cdecl __iob_func(void)
 	return _iob;
 }
 
-float trianglePosx = 0;
-float trianglePosy = 0;
+Transform cubeTransform;
+Transform cameraTransform;
+float mposx, mposy;
 
 void initScene() {
 	//Create buffer
@@ -59,7 +60,7 @@ void initScene() {
 	glBufferData(GL_ARRAY_BUFFER, sizeof(verts), verts, GL_STATIC_DRAW);
 
 	glGenBuffers(1, &EBO);
-	glBindBuffer(GL_ARRAY_BUFFER, EBO);
+	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBO);
 	glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(indices), indices, GL_STATIC_DRAW);
 }
 
@@ -86,17 +87,19 @@ void render() {
 	//Establish array contains vertices and colours
 	glEnableClientState(GL_VERTEX_ARRAY);
 	glEnableClientState(GL_COLOR_ARRAY);
+
 	//switch to model view
 	glMatrixMode(GL_MODELVIEW);
 	//reset using identity matrix
 	glLoadIdentity();
 
-	gluLookAt(0.0, 0.0, 0.6, 0.0, 0.0, -1.0f, 0.0, 1.0, 0.0);
+	gluLookAt(0.0, 0.0, 0.6, cameraTransform.x, cameraTransform.y, -1.0f, 0.0, 1.0, 0.0);
 
 	//translate to -5 on z axis
-	glTranslatef(0.0f, 0.0f, -5.0f);
+	glTranslatef(cubeTransform.x, cubeTransform.y, -5.0f + cubeTransform.z);
+	glRotatef(cubeTransform.rx, 1, 0, 0);
 	//begin drawing triangles
-	glDrawElements(GL_TRIANGLES, sizeof(indices) / sizeof(GLuint), GL_UNSIGNED_INT, 0);
+	glDrawElements(GL_TRIANGLES, sizeof(indices) / sizeof(GLuint),GL_UNSIGNED_INT, 0);
 }
 
 void update() {
@@ -148,17 +151,27 @@ int main(int argc, char * arg[])
 			if (event.type == SDL_KEYDOWN) {
 				switch (event.key.keysym.sym) {
 				case SDLK_LEFT:
-					trianglePosx += -0.1f;
+					cubeTransform.x += -0.1f;
 					break;
 				case SDLK_RIGHT:
-					trianglePosx += 0.1f;
+					cubeTransform.x += 0.1f;
 					break;
 				case SDLK_UP:
-					trianglePosy += 0.1f;
+					cubeTransform.rx += 10.0f;
 					break;
 				case SDLK_DOWN:
-					trianglePosy += -0.1f;
+					cubeTransform.rx += -10.0f;
 					break;
+				}
+			}
+			if (event.type == SDL_MOUSEMOTION) {
+				if(event.motion.x > mposx){
+					cameraTransform.x += 0.1f;
+					mposx = event.motion.x;
+				}
+				if (event.motion.x < mposx) {
+					cameraTransform.x -= 0.1f;
+					mposx = event.motion.x;
 				}
 			}
 		}

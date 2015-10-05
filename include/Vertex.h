@@ -8,4 +8,10 @@ struct Vertex
 	float r, g, b, a;
 };
 
+struct Transform
+{
+	float x, y, z;
+	float rx, ry, rz;
+};
+
 #endif
