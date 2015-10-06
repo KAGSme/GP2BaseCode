@@ -117,6 +117,11 @@ int main(int argc, char * arg[])
 
 		return -1;
 	}
+
+	//ask for version 4.2 for opengl
+	SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, 4);
+	SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, 2);
+	SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK, SDL_GL_CONTEXT_PROFILE_CORE);
 	
 	SDL_Window *window = SDL_CreateWindow("SDL", // window title
 		SDL_WINDOWPOS_CENTERED, //x position, centered

@@ -29,30 +29,6 @@ void initOpenGL() {
 }
 //function set/reset viewport
 void setViewport(int width, int height) {
-	//screen ration
-	GLfloat ratio;
-
-	//make sure height is always above 1
-	if (height == 0) {
-		height = 1;
-	}
-
-	//calculate screen ration
-	ratio = (GLfloat)width / (GLfloat)height;
-
 	//setup viewport
 	glViewport(0, 0, (GLsizei)width, (GLsizei)height);
-
-	//Change to projection matrix mode
-	glMatrixMode(GL_PROJECTION);
-	glLoadIdentity();
-
-	//calculate perspective matrix, using glu library functions
-	gluPerspective(45.0f, ratio, 0.1f, 100.0f);
-
-	//switch to modelview
-	glMatrixMode(GL_MODELVIEW);
-
-	//reset using identity matrix
-	glLoadIdentity();
 }
