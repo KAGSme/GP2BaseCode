@@ -48,7 +48,7 @@ extern "C" FILE * __cdecl __iob_func(void)
 }
 
 Transform cubeTransform;
-Transform cameraTransform;
+Transform cameraTransform = {0.0,0.0,0.6,0.0,0.0,-1.0};
 float mposx, mposy;
 
 void initScene() {
@@ -93,7 +93,7 @@ void render() {
 	//reset using identity matrix
 	glLoadIdentity();
 
-	gluLookAt(0.0, 0.0, 0.6, cameraTransform.x, cameraTransform.y, -1.0f, 0.0, 1.0, 0.0);
+	gluLookAt(cameraTransform.x, cameraTransform.y, cameraTransform.z, cameraTransform.rx, cameraTransform.ry, cameraTransform.rz, 0.0, 1.0, 0.0);
 
 	//translate to -5 on z axis
 	glTranslatef(cubeTransform.x, cubeTransform.y, -5.0f + cubeTransform.z);
@@ -121,8 +121,8 @@ int main(int argc, char * arg[])
 	SDL_Window *window = SDL_CreateWindow("SDL", // window title
 		SDL_WINDOWPOS_CENTERED, //x position, centered
 		SDL_WINDOWPOS_CENTERED, //y position, centered
-		640, //width, in pixels
-		480, //height, in pixels
+		1280, //width, in pixels
+		720, //height, in pixels
 		SDL_WINDOW_OPENGL //flags
 		);
 
@@ -133,7 +133,7 @@ int main(int argc, char * arg[])
 	//call our InitOpenGL Function
 	initOpenGL();
 	//set the viewport
-	setViewport(640, 480);
+	setViewport(1280, 720);
 
 	initScene();
 	
@@ -162,16 +162,40 @@ int main(int argc, char * arg[])
 				case SDLK_DOWN:
 					cubeTransform.rx += -10.0f;
 					break;
+				case SDLK_w:
+					cameraTransform.z += 0.5f;
+					cameraTransform.rz += 0.5f;
+					break;
+				case SDLK_s:
+					cameraTransform.z -= 0.5f;
+					cameraTransform.rz -= 0.5f;
+					break;
+				case SDLK_a:
+					cameraTransform.x -= 0.5f;
+					cameraTransform.rx -= 0.5f;
+					break;
+				case SDLK_d:
+					cameraTransform.x += 0.5f;
+					cameraTransform.rx += 0.5f;
+					break;
 				}
 			}
 			if (event.type == SDL_MOUSEMOTION) {
 				if(event.motion.x > mposx){
-					cameraTransform.x += 0.1f;
+					cameraTransform.rx += 0.1f;
 					mposx = event.motion.x;
 				}
 				if (event.motion.x < mposx) {
-					cameraTransform.x -= 0.1f;
+					cameraTransform.rx -= 0.1f;
 					mposx = event.motion.x;
+				}
+				if (event.motion.y > mposy) {
+					cameraTransform.ry -= 0.1f;
+					mposy = event.motion.y;
+				}
+				if (event.motion.y < mposy) {
+					cameraTransform.ry += 0.1f;
+					mposy = event.motion.y;
 				}
 			}
 		}
