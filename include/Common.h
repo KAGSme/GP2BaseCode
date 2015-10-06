@@ -12,6 +12,9 @@ using namespace std;
 #include <SDL.h>
 #include <SDL_opengl.h>
 
+const string ASSET_PATH = "assets";
+const string SHADER_PATH = "/shaders";
+
 #endif
 
 //linker input fix for VS2015 and SDL: legacy_stdio_definitions.lib
