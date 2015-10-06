@@ -74,30 +74,6 @@ void render() {
 	glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
 	//clear the colour and depth buffer
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-	//Make the new VBO active
-	glBindBuffer(GL_ARRAY_BUFFER, VBO);
-	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBO);
-	//the 3 parameter is now filled out, the pipeline needs to know the size of
-	//each vertex
-	glVertexPointer(3, GL_FLOAT, sizeof(Vertex), NULL);
-	//The Last parameter states that colours start 3 floats into 
-	//each element of the array
-	glColorPointer(4, GL_FLOAT, sizeof(Vertex), (void**)(3 * sizeof(float)));
-
-	//Establish array contains vertices and colours
-	glEnableClientState(GL_VERTEX_ARRAY);
-	glEnableClientState(GL_COLOR_ARRAY);
-
-	//switch to model view
-	glMatrixMode(GL_MODELVIEW);
-	//reset using identity matrix
-	glLoadIdentity();
-
-	gluLookAt(cameraTransform.x, cameraTransform.y, cameraTransform.z, cameraTransform.rx, cameraTransform.ry, cameraTransform.rz, 0.0, 1.0, 0.0);
-
-	//translate to -5 on z axis
-	glTranslatef(cubeTransform.x, cubeTransform.y, -5.0f + cubeTransform.z);
-	glRotatef(cubeTransform.rx, 1, 0, 0);
 	//begin drawing triangles
 	glDrawElements(GL_TRIANGLES, sizeof(indices) / sizeof(GLuint),GL_UNSIGNED_INT, 0);
 }
