@@ -62,3 +62,24 @@ bool checkForCompilerErrors(GLuint shaderProgram)
 	return false;
 }
 
+bool checkForLinkErrors(GLuint program) 
+{
+	GLint isLinked = 0;
+	glGetProgramiv(program, GL_LINK_STATUS, &isLinked);
+
+	if (isLinked == GL_FALSE) {
+		GLint maxLength = 0;
+		glGetProgramiv(program, GL_INFO_LOG_LENGTH, &maxLength);
+		//The maxLenght includes the NULL character
+		string infoLog;
+		infoLog.resize(maxLength);
+
+			glGetShaderInfoLog(program, maxLength, &maxLength, &infoLog[0]);
+		cout << "Shader not linked" << infoLog << endl;
+		//We don't need the shader anymore
+		glDeleteProgram(program);
+		return true;
+	}
+	return false;
+}
+

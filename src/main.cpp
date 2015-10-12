@@ -40,19 +40,23 @@ GLuint indices[] = {
 
 GLuint VBO;
 GLuint EBO;
-
-FILE _iob[] = { *stdin, *stdout, *stderr };
-
-extern "C" FILE * __cdecl __iob_func(void)
-{
-	return _iob;
-}
+GLuint VAO;
 
 Transform cubeTransform;
 Transform cameraTransform = {0.0,0.0,0.6,0.0,0.0,-1.0};
 float mposx, mposy;
+GLuint shaderProgram = 0;
+
+//matrices
+mat4 viewMatrix;
+mat4 projMatrix;
+mat4 worldMatrix;
+mat4 MVPMatrix;
 
 void initScene() {
+	glGenVertexArrays(1, &VAO);
+	glBindVertexArray(VAO);
+
 	//Create buffer
 	glGenBuffers(1, &VBO);
 	//make new VBO active
@@ -64,6 +68,10 @@ void initScene() {
 	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBO);
 	glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(indices), indices, GL_STATIC_DRAW);
 
+	//Tell the shader that 0 is the position element
+	glEnableVertexAttribArray(0);
+	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), NULL);
+
 	GLuint vertexShaderProgram = 0;
 	string vsPath = ASSET_PATH + SHADER_PATH + "/simpleVS.glsl";
 	vertexShaderProgram = loadShaderFromFile(vsPath, VERTEX_SHADER);
@@ -73,11 +81,25 @@ void initScene() {
 	string fsPath = ASSET_PATH + SHADER_PATH + "/simpleFS.glsl";
 	fragmentShaderProgram = loadShaderFromFile(fsPath, FRAGMENT_SHADER);
 	checkForCompilerErrors(fragmentShaderProgram);
+
+	shaderProgram = glCreateProgram();
+	glAttachShader(shaderProgram, vertexShaderProgram);
+	glAttachShader(shaderProgram, fragmentShaderProgram);
+	glLinkProgram(shaderProgram);
+	checkForLinkErrors(shaderProgram);
+
+	//now we can delete the VS & FS Programs
+	glDeleteShader(vertexShaderProgram);
+	glDeleteShader(fragmentShaderProgram);
+
+	glBindAttribLocation(shaderProgram, 0, "vertexPosition");
 }
 
 void cleanUp() {
 	glDeleteBuffers(1, &VBO);
 	glDeleteBuffers(1, &EBO);
+	glDeleteProgram(shaderProgram);
+	glDeleteVertexArrays(1, &VAO);
 }
 
 void render() {
@@ -85,11 +107,17 @@ void render() {
 	glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
 	//clear the colour and depth buffer
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+	glUseProgram(shaderProgram);
+	glBindVertexArray(VAO);
 	//begin drawing triangles
 	glDrawElements(GL_TRIANGLES, sizeof(indices) / sizeof(GLuint),GL_UNSIGNED_INT, 0);
 }
 
 void update() {
+	projMatrix = perspective(45.0f, 640.0f / 480.0f, 0.1f, 100.0f);
+	viewMatrix = lookAt(vec3(0.0f, 0.0f, 10.0f), vec3(0.0f, 0.0f, 0.0f), vec3(0.0f, 1.0f, 0.0f));
+	worldMatrix = translate(mat4(1.0f), vec3(0.0f, 0.0f, 0.0f));
+	MVPMatrix = projMatrix*viewMatrix*worldMatrix;
 }
 
 int main(int argc, char * arg[])
