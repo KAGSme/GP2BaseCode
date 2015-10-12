@@ -3,6 +3,7 @@
 
 //function to initialise OpenGL
 void initOpenGL() {
+	glewExperimental = GL_TRUE;
 	//smooth shading
 	glShadeModel(GL_SMOOTH);
 

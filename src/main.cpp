@@ -44,9 +44,9 @@ mat4 projMatrix;
 mat4 worldMatrix;
 mat4 MVPMatrix;
 
-GLuint VAO;
 GLuint VBO;
 GLuint EBO;
+GLuint VAO;
 GLuint shaderProgram = 0;
 
 float mposx, mposy;
@@ -135,7 +135,7 @@ int main(int argc, char * arg[])
 {
 
 	bool run = true;
-	bool pause = false;
+
 	// init everything - SDL, if it is nonzero we have a problem
 	if (SDL_Init(SDL_INIT_EVERYTHING) != 0)
 	{
@@ -145,10 +145,10 @@ int main(int argc, char * arg[])
 	}
 
 	//ask for version 4.2 for opengl
-	SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK, SDL_GL_CONTEXT_PROFILE_CORE);
 	SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, 4);
-	SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, 1);
-	
+	SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, 2);
+	SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK, SDL_GL_CONTEXT_PROFILE_CORE);
+
 	SDL_Window *window = SDL_CreateWindow("SDL", // window title
 		SDL_WINDOWPOS_CENTERED, //x position, centered
 		SDL_WINDOWPOS_CENTERED, //y position, centered
