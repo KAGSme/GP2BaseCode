@@ -5,16 +5,16 @@
 
 Vertex verts[] = {
 	//front
-	{ -0.5f, 0.5f, 0.5f, 0.0f, 1.0f, 1.0f, 1.0f },//Top Left
-	{ -0.5f, -0.5f, 0.5f, 1.0f, 1.0f, 1.0f, 1.0f }, //bottom Left
-	{ 0.5f, -0.5f, 0.5f, 0.0f, 1.0f, 1.0f, 1.0f }, //bottom right
-	{ 0.5f, 0.5f, 0.5f, 1.0f, 1.0f, 1.0f, 1.0f },//Top Right
+	{ vec3(-0.5f, 0.5f, 0.5f), vec4(0.0f, 1.0f, 1.0f, 1.0f) },//Top Left
+	{ vec3(-0.5f, -0.5f, 0.5f), vec4(1.0f, 1.0f, 1.0f, 1.0f) }, //bottom Left
+	{ vec3(0.5f, -0.5f, 0.5f), vec4(0.0f, 1.0f, 1.0f, 1.0f) }, //bottom right
+	{ vec3(0.5f, 0.5f, 0.5f), vec4(1.0f, 1.0f, 1.0f, 1.0f) },//Top Right
 
 	//back
-	{ -0.5f, 0.5f, -0.5f, 0.0f, 1.0f, 1.0f, 1.0f },//Top Left
-	{ -0.5f, -0.5f, -0.5f, 1.0f, 1.0f, 1.0f, 1.0f }, //bottom Left
-	{ 0.5f, -0.5f, -0.5f, 0.0f, 1.0f, 1.0f, 1.0f }, //bottom right
-	{ 0.5f, 0.5f, -0.5f, 0.0f, 1.0f, 1.0f, 1.0f },//Top Right
+	{ vec3(-0.5f, 0.5f, -0.5f), vec4(0.0f, 1.0f, 1.0f, 1.0f) },//Top Left
+	{ vec3(-0.5f, -0.5f, -0.5f), vec4(1.0f, 1.0f, 1.0f, 1.0f) }, //bottom Left
+	{ vec3(0.5f, -0.5f, -0.5f), vec4(0.0f, 1.0f, 1.0f, 1.0f) }, //bottom right
+	{ vec3(0.5f, 0.5f, -0.5f), vec4(0.0f, 1.0f, 1.0f, 1.0f) },//Top Right
 };
 
 GLuint indices[] = {
@@ -38,34 +38,33 @@ GLuint indices[] = {
 	4,7,6
 };
 
-GLuint VBO;
-GLuint EBO;
-GLuint VAO;
-
-Transform cubeTransform;
-Transform cameraTransform = {0.0,0.0,0.6,0.0,0.0,-1.0};
-float mposx, mposy;
-GLuint shaderProgram = 0;
-
 //matrices
 mat4 viewMatrix;
 mat4 projMatrix;
 mat4 worldMatrix;
 mat4 MVPMatrix;
 
+GLuint VAO;
+GLuint VBO;
+GLuint EBO;
+GLuint shaderProgram = 0;
+
+float mposx, mposy;
+
 void initScene() {
+	//Generate Vertex Array
 	glGenVertexArrays(1, &VAO);
 	glBindVertexArray(VAO);
 
-	//Create buffer
 	glGenBuffers(1, &VBO);
-	//make new VBO active
 	glBindBuffer(GL_ARRAY_BUFFER, VBO);
-	//Copy Vertex Data to VBO
 	glBufferData(GL_ARRAY_BUFFER, sizeof(verts), verts, GL_STATIC_DRAW);
 
+	//create buffer
 	glGenBuffers(1, &EBO);
+	//Make the EBO active
 	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBO);
+	//Copy Index data to the EBO
 	glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(indices), indices, GL_STATIC_DRAW);
 
 	//Tell the shader that 0 is the position element
@@ -85,14 +84,16 @@ void initScene() {
 	shaderProgram = glCreateProgram();
 	glAttachShader(shaderProgram, vertexShaderProgram);
 	glAttachShader(shaderProgram, fragmentShaderProgram);
+
 	glLinkProgram(shaderProgram);
 	checkForLinkErrors(shaderProgram);
-
 	//now we can delete the VS & FS Programs
 	glDeleteShader(vertexShaderProgram);
 	glDeleteShader(fragmentShaderProgram);
 
+	//Link attributes
 	glBindAttribLocation(shaderProgram, 0, "vertexPosition");
+
 }
 
 void cleanUp() {
@@ -103,14 +104,24 @@ void cleanUp() {
 }
 
 void render() {
+	//old imediate mode!
 	//Set the clear colour(background)
 	glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
 	//clear the colour and depth buffer
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
 	glUseProgram(shaderProgram);
+
+	GLint MVPLocation = glGetUniformLocation(shaderProgram, "MVP");
+
+	glUniformMatrix4fv(MVPLocation, 1, GL_FALSE, glm::value_ptr(MVPMatrix));
+
 	glBindVertexArray(VAO);
-	//begin drawing triangles
-	glDrawElements(GL_TRIANGLES, sizeof(indices) / sizeof(GLuint),GL_UNSIGNED_INT, 0);
+
+	glDrawElements(GL_TRIANGLES, sizeof(indices) / sizeof(GLuint), GL_UNSIGNED_INT, 0);
+
+	glBindVertexArray(0);
+	glUseProgram(0);
 }
 
 void update() {
@@ -134,15 +145,15 @@ int main(int argc, char * arg[])
 	}
 
 	//ask for version 4.2 for opengl
-	SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, 4);
-	SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, 2);
 	SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK, SDL_GL_CONTEXT_PROFILE_CORE);
+	SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, 4);
+	SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, 1);
 	
 	SDL_Window *window = SDL_CreateWindow("SDL", // window title
 		SDL_WINDOWPOS_CENTERED, //x position, centered
 		SDL_WINDOWPOS_CENTERED, //y position, centered
-		1280, //width, in pixels
-		720, //height, in pixels
+		640, //width, in pixels
+		480, //height, in pixels
 		SDL_WINDOW_OPENGL //flags
 		);
 
@@ -153,7 +164,7 @@ int main(int argc, char * arg[])
 	//call our InitOpenGL Function
 	initOpenGL();
 	//set the viewport
-	setViewport(1280, 720);
+	setViewport(640, 480);
 
 	initScene();
 	
@@ -171,50 +182,46 @@ int main(int argc, char * arg[])
 			if (event.type == SDL_KEYDOWN) {
 				switch (event.key.keysym.sym) {
 				case SDLK_LEFT:
-					cubeTransform.x += -0.1f;
+
 					break;
 				case SDLK_RIGHT:
-					cubeTransform.x += 0.1f;
+
 					break;
 				case SDLK_UP:
-					cubeTransform.rx += 10.0f;
+
 					break;
 				case SDLK_DOWN:
-					cubeTransform.rx += -10.0f;
+
 					break;
 				case SDLK_w:
-					cameraTransform.z += 0.5f;
-					cameraTransform.rz += 0.5f;
+
 					break;
 				case SDLK_s:
-					cameraTransform.z -= 0.5f;
-					cameraTransform.rz -= 0.5f;
+
 					break;
 				case SDLK_a:
-					cameraTransform.x -= 0.5f;
-					cameraTransform.rx -= 0.5f;
+
 					break;
 				case SDLK_d:
-					cameraTransform.x += 0.5f;
-					cameraTransform.rx += 0.5f;
+
 					break;
 				}
 			}
 			if (event.type == SDL_MOUSEMOTION) {
 				if(event.motion.x > mposx){
-					cameraTransform.rx += 0.1f;
+
 					mposx = event.motion.x;
 				}
 				if (event.motion.x < mposx) {
-					cameraTransform.rx -= 0.1f;
+
 					mposx = event.motion.x;
 				}
 				if (event.motion.y > mposy) {
-					cameraTransform.ry -= 0.1f;
+
 					mposy = event.motion.y;
 				}
 				if (event.motion.y < mposy) {
-					cameraTransform.ry += 0.1f;
+
 					mposy = event.motion.y;
 				}
 			}

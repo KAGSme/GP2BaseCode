@@ -1,7 +1,7 @@
 #include "Shader.h"
 
 //Load it from a memory buffer
-GLuint loadShaderFromMemory(const char* pMem, SHADER_TYPE shaderType)
+GLuint loadShaderFromMemory(const char * pMem, SHADER_TYPE shaderType)
 {
 	GLuint program = glCreateShader(shaderType);
 	glShaderSource(program, 1, &pMem, NULL);
@@ -9,6 +9,7 @@ GLuint loadShaderFromMemory(const char* pMem, SHADER_TYPE shaderType)
 	return program;
 }
 
+//Load Shader from File
 GLuint loadShaderFromFile(const std::string& filename, SHADER_TYPE shaderType)
 {
 	string fileContents;
@@ -28,7 +29,7 @@ GLuint loadShaderFromFile(const std::string& filename, SHADER_TYPE shaderType)
 		file.seekg(std::ios::beg);
 		if (len == 0)
 		{
-			std::cout << "File has no contents" << std::endl;
+			std::cout << "File has no contents " << std::endl;
 			return 0;
 		}
 
@@ -38,6 +39,7 @@ GLuint loadShaderFromFile(const std::string& filename, SHADER_TYPE shaderType)
 		GLuint program = loadShaderFromMemory(fileContents.c_str(), shaderType);
 		return program;
 	}
+
 	return 0;
 }
 
@@ -45,38 +47,35 @@ bool checkForCompilerErrors(GLuint shaderProgram)
 {
 	GLint isCompiled = 0;
 	glGetShaderiv(shaderProgram, GL_COMPILE_STATUS, &isCompiled);
-	if (isCompiled == GL_FALSE) {
+	if (isCompiled == GL_FALSE)
+	{
 		GLint maxLength = 0;
 		glGetShaderiv(shaderProgram, GL_INFO_LOG_LENGTH, &maxLength);
-
 		//The maxLength includes the NULL character
 		string infoLog;
 		infoLog.resize(maxLength);
 		glGetShaderInfoLog(shaderProgram, maxLength, &maxLength, &infoLog[0]);
-		cout<< "Shader not Compiled" << infoLog << endl;
-
-		//we don't need the shader anymore.
+		cout << "Shader not compiled " << infoLog << endl;
+		//We don't need the shader anymore.
 		glDeleteShader(shaderProgram);
 		return true;
 	}
+
 	return false;
 }
 
-bool checkForLinkErrors(GLuint program) 
+bool checkForLinkErrors(GLuint program)
 {
 	GLint isLinked = 0;
 	glGetProgramiv(program, GL_LINK_STATUS, &isLinked);
-
 	if (isLinked == GL_FALSE) {
 		GLint maxLength = 0;
 		glGetProgramiv(program, GL_INFO_LOG_LENGTH, &maxLength);
-		//The maxLenght includes the NULL character
+		//The maxLength includes the NULL character
 		string infoLog;
-		infoLog.resize(maxLength);
-
-			glGetShaderInfoLog(program, maxLength, &maxLength, &infoLog[0]);
-		cout << "Shader not linked" << infoLog << endl;
-		//We don't need the shader anymore
+		glGetShaderInfoLog(program, maxLength, &maxLength, &infoLog[0]);
+		cout << "Shader not linked " << infoLog << endl;
+		//We don't need the shader anymore.
 		glDeleteProgram(program);
 		return true;
 	}
