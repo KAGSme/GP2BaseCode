@@ -6,30 +6,30 @@
 Vertex verts[]={
 //Front
 { vec3(-0.5f, 0.5f, 0.5f),
-    vec4(1.0f, 0.0f, 1.0f, 1.0f) },// Top Left
+    vec4(1.0f, 0.0f, 1.0f, 1.0f), vec2(0.0f, 0.0f)},// Top Left
 
 { vec3(-0.5f, -0.5f, 0.5f),
-    vec4(1.0f, 1.0f, 0.0f, 1.0f) },// Bottom Left
+    vec4(1.0f, 1.0f, 0.0f, 1.0f), vec2(0.0f, 1.0f)},// Bottom Left
 
 { vec3(0.5f, -0.5f, 0.5f),
-    vec4(0.0f, 1.0f, 1.0f, 1.0f) }, //Bottom Right
+    vec4(0.0f, 1.0f, 1.0f, 1.0f), vec2(1.0f, 1.0f)}, //Bottom Right
 
 { vec3(0.5f, 0.5f, 0.5f),
-    vec4(1.0f, 0.0f, 1.0f, 1.0f) },// Top Right
+    vec4(1.0f, 0.0f, 1.0f, 1.0f), vec2(1.0f, 0.0f) },// Top Right
 
 
 //back
 { vec3(-0.5f, 0.5f, -0.5f),
-    vec4(1.0f, 0.0f, 1.0f, 1.0f) },// Top Left
+    vec4(1.0f, 0.0f, 1.0f, 1.0f), vec2(0.0f, 0.0f)},// Top Left
 
 { vec3(-0.5f, -0.5f, -0.5f),
-    vec4(1.0f, 1.0f, 0.0f, 1.0f) },// Bottom Left
+    vec4(1.0f, 1.0f, 0.0f, 1.0f), vec2(0.0f, 0.0f) },// Bottom Left
 
 { vec3(0.5f, -0.5f, -0.5f),
-    vec4(0.0f, 1.0f, 1.0f, 1.0f) }, //Bottom Right
+    vec4(0.0f, 1.0f, 1.0f, 1.0f), vec2(0.0f, 0.0f) }, //Bottom Right
 
 { vec3(0.5f, 0.5f, -0.5f),
-    vec4(1.0f, 0.0f, 1.0f, 1.0f) },// Top Right
+    vec4(1.0f, 0.0f, 1.0f, 1.0f), vec2(0.0f, 0.0f) },// Top Right
 
 };
 
@@ -69,6 +69,7 @@ GLuint VBO;
 GLuint EBO;
 GLuint VAO;
 GLuint shaderProgram;
+GLuint myTexture;
 
 void initScene()
 {
@@ -92,6 +93,8 @@ void initScene()
 
   glEnableVertexAttribArray(1);
   glVertexAttribPointer(1, 4, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void**)(sizeof(vec3)));
+
+  //glEnableVertexAttrib
 
   GLuint vertexShaderProgram=0;
   string vsPath = ASSET_PATH + SHADER_PATH + "/simpleColourVS.glsl";
@@ -186,6 +189,11 @@ int main(int argc, char * arg[])
 
     // Create an OpenGL context associated with the window.
     SDL_GLContext glcontext = SDL_GL_CreateContext(window);
+	int imageInitFlags = IMG_INIT_JPG | IMG_INIT_PNG;
+	int returnInitFlags = IMG_Init(imageInitFlags);
+	if (((returnInitFlags)& (imageInitFlags)) != imageInitFlags) {
+		cout << "ERROR SDL_Image Init" << IMG_GetError() << endl;
+	}
 
     //Call our InitOpenGL Function
     initOpenGL();
@@ -234,6 +242,7 @@ int main(int argc, char * arg[])
     cleanUp();
     SDL_GL_DeleteContext(glcontext);
     SDL_DestroyWindow(window);
+	IMG_Quit();
     SDL_Quit();
 
     return 0;
