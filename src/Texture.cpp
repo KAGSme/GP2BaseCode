@@ -12,17 +12,17 @@ GLuint loadTextureFromFile(const string& filename) {
 	return textureID;
 }
 
-GLuint convertSDLSurfaceToTexture(SDL_Surface * surface) {
+GLuint convertSDLSurfaceToTexture(SDL_Surface *surface) {
 	GLuint textureID = 0;
 	GLint nOfColors = surface->format->BytesPerPixel;
 
-	GLenum textureFormat = GL_RGBA;
-	GLenum internalFormat = GL_RGBA8;
+	GLenum textureFormat = GL_RGB;
+	GLenum internalFormat = GL_RGB8;
 
 	if (nOfColors== 4)// contains an alpha channel
 	{
 		if (surface->format->Rmask == 0x000000ff) {
-			textureFormat = GL_BGRA;
+			textureFormat = GL_RGBA;
 			internalFormat = GL_RGBA8;
 		}
 	}

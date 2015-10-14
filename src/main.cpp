@@ -2,20 +2,21 @@
 #include "Graphics.h"
 #include "Vertices.h"
 #include "Shader.h"
+#include "Texture.h"
 
 Vertex verts[]={
 //Front
 { vec3(-0.5f, 0.5f, 0.5f),
-    vec4(1.0f, 0.0f, 1.0f, 1.0f), vec2(0.0f, 0.0f)},// Top Left
+    vec4(1.0f, 1.0f, 1.0f, 1.0f), vec2(0.0f, 0.0f)},// Top Left
 
 { vec3(-0.5f, -0.5f, 0.5f),
     vec4(1.0f, 1.0f, 0.0f, 1.0f), vec2(0.0f, 1.0f)},// Bottom Left
 
 { vec3(0.5f, -0.5f, 0.5f),
-    vec4(0.0f, 1.0f, 1.0f, 1.0f), vec2(1.0f, 1.0f)}, //Bottom Right
+    vec4(1.0f, 1.0f, 1.0f, 1.0f), vec2(1.0f, 1.0f)}, //Bottom Right
 
 { vec3(0.5f, 0.5f, 0.5f),
-    vec4(1.0f, 0.0f, 1.0f, 1.0f), vec2(1.0f, 0.0f) },// Top Right
+    vec4(1.0f, 1.0f, 1.0f, 1.0f), vec2(1.0f, 0.0f) },// Top Right
 
 
 //back
@@ -26,10 +27,10 @@ Vertex verts[]={
     vec4(1.0f, 1.0f, 0.0f, 1.0f), vec2(0.0f, 0.0f) },// Bottom Left
 
 { vec3(0.5f, -0.5f, -0.5f),
-    vec4(0.0f, 1.0f, 1.0f, 1.0f), vec2(0.0f, 0.0f) }, //Bottom Right
+    vec4(1.0f, 1.0f, 1.0f, 1.0f), vec2(0.0f, 0.0f) }, //Bottom Right
 
 { vec3(0.5f, 0.5f, -0.5f),
-    vec4(1.0f, 0.0f, 1.0f, 1.0f), vec2(0.0f, 0.0f) },// Top Right
+    vec4(1.0f, 1.0f, 1.0f, 1.0f), vec2(0.0f, 0.0f) },// Top Right
 
 };
 
@@ -69,65 +70,79 @@ GLuint VBO;
 GLuint EBO;
 GLuint VAO;
 GLuint shaderProgram;
-GLuint myTexture;
+
+GLuint textureMap;
 
 void initScene()
 {
-  //Generate Vertex Array
-  glGenVertexArrays(1,&VAO);
-  glBindVertexArray( VAO );
-  glGenBuffers(1, &VBO);
-  glBindBuffer(GL_ARRAY_BUFFER, VBO);
-  glBufferData(GL_ARRAY_BUFFER, sizeof(verts), verts, GL_STATIC_DRAW);
+	//load texture & bind it
+	string texturePath = ASSET_PATH + TEXTURE_PATH + "/texture.png";
+	textureMap = loadTextureFromFile(texturePath);
 
-  //create buffer
-  glGenBuffers(1, &EBO);
-  //Make the EBO active
-  glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBO);
-  //Copy Index data to the EBO
-  glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(indices), indices, GL_STATIC_DRAW);
+	glBindTexture(GL_TEXTURE_2D, textureMap);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_MIRRORED_REPEAT);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_MIRRORED_REPEAT);
+	glGenerateMipmap(GL_TEXTURE_2D);
 
-  //Tell the shader that 0 is the position element
-  glEnableVertexAttribArray(0);
-  glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), NULL);
+	//Generate Vertex Array
+	glGenVertexArrays(1,&VAO);
+	glBindVertexArray( VAO );
+	glGenBuffers(1, &VBO);
+	glBindBuffer(GL_ARRAY_BUFFER, VBO);
+	glBufferData(GL_ARRAY_BUFFER, sizeof(verts), verts, GL_STATIC_DRAW);
 
-  glEnableVertexAttribArray(1);
-  glVertexAttribPointer(1, 4, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void**)(sizeof(vec3)));
+	//create buffer
+	glGenBuffers(1, &EBO);
+	//Make the EBO active
+	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBO);
+	//Copy Index data to the EBO
+	glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(indices), indices, GL_STATIC_DRAW);
 
-  glEnableVertexAttribArray(2);
-  glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void**)((sizeof(vec3) + (sizeof(vec4)))));
+	//Tell the shader that 0 is the position element
+	glEnableVertexAttribArray(0);
+	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), NULL);
 
-  GLuint vertexShaderProgram=0;
-  string vsPath = ASSET_PATH + SHADER_PATH + "/simpleColourVS.glsl";
-  vertexShaderProgram = loadShaderFromFile(vsPath, VERTEX_SHADER);
-  checkForCompilerErrors(vertexShaderProgram);
+	glEnableVertexAttribArray(1);
+	glVertexAttribPointer(1, 4, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void**)(sizeof(vec3)));
 
-  GLuint fragmentShaderProgram=0;
-  string fsPath = ASSET_PATH + SHADER_PATH + "/simpleColourFS.glsl";
-  fragmentShaderProgram = loadShaderFromFile(fsPath, FRAGMENT_SHADER);
-  checkForCompilerErrors(fragmentShaderProgram);
+	glEnableVertexAttribArray(2);
+	glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void**)((sizeof(vec3) + (sizeof(vec4)))));
 
-  shaderProgram = glCreateProgram();
-  glAttachShader(shaderProgram, vertexShaderProgram);
-  glAttachShader(shaderProgram, fragmentShaderProgram);
+	GLuint vertexShaderProgram=0;
+	string vsPath = ASSET_PATH + SHADER_PATH + "/textureVS.glsl";
+	vertexShaderProgram = loadShaderFromFile(vsPath, VERTEX_SHADER);
+	checkForCompilerErrors(vertexShaderProgram);
 
-  //Link attributes
-  glBindAttribLocation(shaderProgram, 0, "vertexPosition");
-  glBindAttribLocation(shaderProgram, 1, "vertexColour");
+	GLuint fragmentShaderProgram=0;
+	string fsPath = ASSET_PATH + SHADER_PATH + "/textureFS.glsl";
+	fragmentShaderProgram = loadShaderFromFile(fsPath, FRAGMENT_SHADER);
+	checkForCompilerErrors(fragmentShaderProgram);
 
-  glLinkProgram(shaderProgram);
-  checkForLinkErrors(shaderProgram);
-  //now we can delete the VS & FS Programs
-  glDeleteShader(vertexShaderProgram);
-  glDeleteShader(fragmentShaderProgram);
+	shaderProgram = glCreateProgram();
+	glAttachShader(shaderProgram, vertexShaderProgram);
+	glAttachShader(shaderProgram, fragmentShaderProgram);
+
+	//Link attributes
+	glBindAttribLocation(shaderProgram, 0, "vertexPosition");
+	glBindAttribLocation(shaderProgram, 1, "vertexColour");
+	glBindAttribLocation(shaderProgram, 2, "vertexTexCoords");
+
+	glLinkProgram(shaderProgram);
+	checkForLinkErrors(shaderProgram);
+	//now we can delete the VS & FS Programs
+	glDeleteShader(vertexShaderProgram);
+	glDeleteShader(fragmentShaderProgram);
 }
 
 void cleanUp()
 {
-  glDeleteProgram(shaderProgram);
-  glDeleteBuffers(1, &EBO);
-  glDeleteBuffers(1, &VBO);
-  glDeleteVertexArrays(1,&VAO);
+	glDeleteTextures(1, &textureMap);
+	glDeleteProgram(shaderProgram);
+	glDeleteBuffers(1, &EBO);
+	glDeleteBuffers(1, &VBO);
+	glDeleteVertexArrays(1,&VAO);
 }
 
 void update()
@@ -152,7 +167,13 @@ void render()
     glUseProgram(shaderProgram);
 
     GLint MVPLocation = glGetUniformLocation(shaderProgram, "MVP");
+	GLint texture0Location = glGetUniformLocation(shaderProgram, "texture0");
+
+	glActiveTexture(GL_TEXTURE0);
+	glBindTexture(GL_TEXTURE_2D, textureMap);
+
     glUniformMatrix4fv(MVPLocation, 1, GL_FALSE, glm::value_ptr(MVPMatrix));
+	glUniform1i(texture0Location, 0);
 
     glBindVertexArray( VAO );
 
