@@ -6,31 +6,31 @@
 
 Vertex verts[]={
 //Front
-{ vec3(-0.5f, 0.5f, 0.5f),
+{ vec3(-1, 0.5f, 0.5f),
     vec4(1.0f, 1.0f, 1.0f, 1.0f), vec2(0.0f, 0.0f)},// Top Left
 
-{ vec3(-0.5f, -0.5f, 0.5f),
+{ vec3(-1, -0.5f, 0.5f),
     vec4(1.0f, 1.0f, 0.0f, 1.0f), vec2(0.0f, 1.0f)},// Bottom Left
 
-{ vec3(0.5f, -0.5f, 0.5f),
+{ vec3(1, -0.5f, 0.5f),
     vec4(1.0f, 1.0f, 1.0f, 1.0f), vec2(1.0f, 1.0f)}, //Bottom Right
 
-{ vec3(0.5f, 0.5f, 0.5f),
+{ vec3(1, 0.5f, 0.5f),
     vec4(1.0f, 1.0f, 1.0f, 1.0f), vec2(1.0f, 0.0f) },// Top Right
 
 
 //back
-{ vec3(-0.5f, 0.5f, -0.5f),
+{ vec3(-1, 0.5f, -0.5f),
     vec4(1.0f, 0.0f, 1.0f, 1.0f), vec2(0.0f, 0.0f)},// Top Left
 
-{ vec3(-0.5f, -0.5f, -0.5f),
-    vec4(1.0f, 1.0f, 0.0f, 1.0f), vec2(0.0f, 0.0f) },// Bottom Left
+{ vec3(-1, -0.5f, -0.5f),
+    vec4(1.0f, 1.0f, 0.0f, 1.0f), vec2(0.0f, 1.0f) },// Bottom Left
 
-{ vec3(0.5f, -0.5f, -0.5f),
-    vec4(1.0f, 1.0f, 1.0f, 1.0f), vec2(0.0f, 0.0f) }, //Bottom Right
+{ vec3(1, -0.5f, -0.5f),
+    vec4(1.0f, 1.0f, 1.0f, 1.0f), vec2(1.0f, 1.0f) }, //Bottom Right
 
-{ vec3(0.5f, 0.5f, -0.5f),
-    vec4(1.0f, 1.0f, 1.0f, 1.0f), vec2(0.0f, 0.0f) },// Top Right
+{ vec3(1, 0.5f, -0.5f),
+    vec4(1.0f, 1.0f, 1.0f, 1.0f), vec2(1.0f, 0.0f) },// Top Right
 
 };
 
@@ -88,14 +88,15 @@ void initScene()
 	glGenerateMipmap(GL_TEXTURE_2D);
 
 	//load font and bind it
-	string fontTexPath = ASSET_PATH + FONT_PATH + "/OratorStd.otf";
-	fontTexture = loadTextureFromFont(fontTexPath, 19, "Hello World");
+	string fontTexPath = ASSET_PATH + FONT_PATH +"/OratorStd.otf";
+	fontTexture = loadTextureFromFont(fontTexPath, 20, "Hello World");
 
 	glBindTexture(GL_TEXTURE_2D, fontTexture);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_MIRRORED_REPEAT);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_MIRRORED_REPEAT);
+	glGenerateMipmap(GL_TEXTURE_2D);
 
 	//Generate Vertex Array
 	glGenVertexArrays(1,&VAO);
@@ -178,15 +179,17 @@ void render()
 
 	glEnable(GL_BLEND);
 	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+
     glUseProgram(shaderProgram);
 
     GLint MVPLocation = glGetUniformLocation(shaderProgram, "MVP");
-	GLint texture0Location = glGetUniformLocation(shaderProgram, "texture0");
+	glUniformMatrix4fv(MVPLocation, 1, GL_FALSE, glm::value_ptr(MVPMatrix));
 
+	
+
+	GLint texture0Location = glGetUniformLocation(shaderProgram, "texture0");
 	glActiveTexture(GL_TEXTURE0);
 	glBindTexture(GL_TEXTURE_2D, fontTexture);
-
-    glUniformMatrix4fv(MVPLocation, 1, GL_FALSE, glm::value_ptr(MVPMatrix));
 	glUniform1i(texture0Location, 0);
 
     glBindVertexArray( VAO );
@@ -208,8 +211,14 @@ int main(int argc, char * arg[])
         return -1;
 	}
 
+	int imageInitFlags = IMG_INIT_JPG | IMG_INIT_PNG;
+	int returnInitFlags = IMG_Init(imageInitFlags);
+	if (((returnInitFlags)& (imageInitFlags)) != imageInitFlags) {
+		cout << "ERROR SDL_Image Init" << IMG_GetError() << endl;
+	}
+
 	if (TTF_Init() == -1) {
-		std::cout << "ERROR TTF_Init:" << TTF_GetError();
+		cout << "ERROR TTF_Init:" << TTF_GetError();
 	}
 
 	//Request opengl 4.1 context, Core Context
@@ -229,11 +238,6 @@ int main(int argc, char * arg[])
 
     // Create an OpenGL context associated with the window.
     SDL_GLContext glcontext = SDL_GL_CreateContext(window);
-	int imageInitFlags = IMG_INIT_JPG | IMG_INIT_PNG;
-	int returnInitFlags = IMG_Init(imageInitFlags);
-	if (((returnInitFlags)& (imageInitFlags)) != imageInitFlags) {
-		cout << "ERROR SDL_Image Init" << IMG_GetError() << endl;
-	}
 
     //Call our InitOpenGL Function
     initOpenGL();

@@ -42,6 +42,10 @@ GLuint convertSDLSurfaceToTexture(SDL_Surface *surface) {
 			textureFormat = GL_RGBA;
 			internalFormat = GL_RGBA8;
 		}
+		else {
+			textureFormat = GL_BGRA;
+			internalFormat = GL_RGBA8;
+		}
 	}
 	else if (nOfColors == 3)//no alpha channel
 	{
