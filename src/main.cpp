@@ -3,6 +3,7 @@
 #include "Vertices.h"
 #include "Shader.h"
 #include "Texture.h"
+#include "FileSystem.h"
 
 Vertex verts[]={
 //Front
@@ -199,7 +200,7 @@ void render()
 
 int main(int argc, char * arg[])
 {
-
+	ChangeWorkingDirectory();
     //Controls the game loop
     bool run=true;
 
