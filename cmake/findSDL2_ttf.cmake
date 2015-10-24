@@ -38,8 +38,8 @@ find_library(SDL2_TTF_LIBRARY_DEBUG
   /opt/local   # DarwinPorts
   /opt/csw     # Blastwave
   /opt
-  ${SDL2_TTF_DIR}
-  $ENV{SDL2_TTF_DIR})
+  ${SDL2_TTF_DIR}/lib/x64
+  $ENV{SDL2_TTF_DIR}/lib/x64)
 
 find_library(SDL2_TTF_LIBRARY_RELEASE
   NAMES SDL2_ttf SDL2_ttf-s
@@ -53,8 +53,8 @@ find_library(SDL2_TTF_LIBRARY_RELEASE
   /opt/local   # DarwinPorts
   /opt/csw     # Blastwave
   /opt
-  ${SDL2_TTF_DIR}
-  $ENV{SDL2_TTF_DIR})
+  ${SDL2_TTF_DIR}/lib/x64
+  $ENV{SDL2_TTF_DIR}/lib/x64)
 
 if(SDL2_TTF_LIBRARY_DEBUG OR SDL2_TTF_LIBRARY_RELEASE)
   # Library found

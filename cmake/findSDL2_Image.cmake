@@ -43,23 +43,41 @@ FIND_PATH(SDL2IMAGE_INCLUDE_DIR SDL_image.h
   /opt/csw/include/SDL2 # Blastwave
   /opt/include/SDL2
 )
-
-FIND_LIBRARY(SDL2IMAGE_LIBRARY
-  NAMES SDL2_image
-  HINTS
-  $ENV{SDL2IMAGEDIR}
-  $ENV{SDL2DIR}
-  PATH_SUFFIXES lib64 lib
-  PATHS
-  ~/Library/Frameworks
-  /Library/Frameworks
-  /usr/local
-  /usr
-  /sw
-  /opt/local
-  /opt/csw
-  /opt
-)
+# Lookup the 64 bit libs on x64
+IF(CMAKE_SIZEOF_VOID_P EQUAL 8)
+	FIND_LIBRARY(SDL2IMAGE_LIBRARY 
+		NAMES SDL2_Image
+		HINTS
+		${SDL2}
+		$ENV{SDL2}
+		$ENV{SDL2IMAGEDIR}
+		PATH_SUFFIXES lib64 lib
+		lib/x64
+		x86_64-w64-mingw32/lib
+		PATHS
+		/sw
+		/opt/local
+		/opt/csw
+		/opt
+	)
+# On 32bit build find the 32bit libs
+ELSE(CMAKE_SIZEOF_VOID_P EQUAL 8)
+	FIND_LIBRARY(SDL2IMAGE_LIBRARY 
+		NAMES SDL2_Image
+		HINTS
+		${SDL2}
+		$ENV{SDL2}
+		$ENV{SDL2IMAGEDIR}
+		PATH_SUFFIXES lib
+		lib/x86
+		i686-w64-mingw32/lib
+		PATHS
+		/sw
+		/opt/local
+		/opt/csw
+		/opt
+	)
+ENDIF(CMAKE_SIZEOF_VOID_P EQUAL 8)
 
 SET(SDL2IMAGE_FOUND "NO")
 IF(SDL2IMAGE_LIBRARY AND SDL2IMAGE_INCLUDE_DIR)
