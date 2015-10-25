@@ -102,7 +102,7 @@ void update()
 {
   projMatrix = glm::perspective(45.0f, 640.0f / 480.0f, 0.1f, 100.0f);
 
-  viewMatrix = glm::lookAt(vec3(0.0f, 0.0f, 10.0f), vec3(0.0f, 0.0f, 0.0f), vec3(0.0f, 1.0f, 0.0f));
+  viewMatrix = glm::lookAt(vec3(0.0f, 3.0f, 8.0f), vec3(0.0f, 0.0f, 0.0f), vec3(0.0f, 1.0f, 0.0f));
 
   worldMatrix= glm::translate(mat4(1.0f), vec3(0.0f,0.0f,0.0f));
 
