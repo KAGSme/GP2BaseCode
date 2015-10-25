@@ -137,10 +137,11 @@ void processMesh(FbxMesh *mesh, MeshData *meshData) {
 void processMeshTextureCoords(FbxMesh *mesh, Vertex *verts, int numVerts) {
 	for (int iPolygon = 0; iPolygon < mesh->GetPolygonCount(); iPolygon++) {
 		for (unsigned iPolygonVertex = 0; iPolygonVertex < 3; iPolygonVertex++) {
+
 			int fbxCornerIndex = mesh->GetPolygonVertex(iPolygon, iPolygonVertex);
 
 			FbxVector2 fbxUV = FbxVector2(0.0, 0.0);
-			FbxLayerElementUV *fbxLayerUV = mesh->GetLayer(0)->GetUVs();
+			FbxLayerElementUV* fbxLayerUV = mesh->GetLayer(0)->GetUVs();
 			//Get texture coordinate
 			if (fbxLayerUV) {
 				int iUVindex = 0;
@@ -150,8 +151,9 @@ void processMeshTextureCoords(FbxMesh *mesh, Vertex *verts, int numVerts) {
 					break;
 				case FbxLayerElement::eByPolygonVertex:
 					iUVindex = mesh->GetTextureUVIndex(iPolygon,
-						iPolygonVertex,
-						FbxLayerElement::eTextureDiffuse);
+										iPolygonVertex,
+										FbxLayerElement::
+										eTextureDiffuse);
 					break;
 				case FbxLayerElement::eByPolygon:
 						iUVindex = iPolygon;

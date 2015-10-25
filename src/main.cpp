@@ -24,11 +24,11 @@ GLuint textureMap;
 void initScene()
 {
 	//load mesh and bind it
-	string modelPath = ASSET_PATH + MODEL_PATH + "/Tank1.FBX";
+	string modelPath = ASSET_PATH + MODEL_PATH + "/armoredrecon.fbx";
 	loadFBXFromFile(modelPath, &currentMesh);
 
 	//load texture & bind it
-	string texturePath = ASSET_PATH + TEXTURE_PATH + "/Tank1DF.png";
+	string texturePath = ASSET_PATH + TEXTURE_PATH + "/armoredrecon_diff_white.png";
 	textureMap = loadTextureFromFile(texturePath);
 
 	glBindTexture(GL_TEXTURE_2D, textureMap);
