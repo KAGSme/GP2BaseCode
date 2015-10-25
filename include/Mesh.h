@@ -14,11 +14,11 @@ struct MeshData
 		return vertices.size();
 	};
 
-	int getNumIndicies() {
+	int getNumIndices() {
 		return indices.size();
 	};
 
-    ~Mesh(){
+    ~MeshData(){
 		vertices.clear();
 		indices.clear();
 	}

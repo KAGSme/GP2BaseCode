@@ -69,14 +69,99 @@ bool loadFBXFromFile(const string& filename, MeshData *meshData) {
 }
 
 void processNode(FbxNode *node, MeshData *meshData) {
+	PrintTabs();
+	const char* nodeName = node->GetName();
+	FbxDouble3 translation = node->LclTranslation.Get();
+	FbxDouble3 rotation = node->LclRotation.Get();
+	FbxDouble3 scaling = node->LclScaling.Get();
 
+	cout << "Node " << nodeName
+		<< " Position" << translation[0] << " " << translation[1] << " " << translation[2] << " "
+		<< "Rotation" << rotation[0] << " " << rotation[1] << " " << rotation[2] << " "
+		<< "Scale" << scaling[0] << " " << scaling[1] << " " << scaling[2] << " " << endl;
+
+	level++;
+	//Print the node's 
+	for (int i = 0; i < node->GetNodeAttributeCount(); i++) {
+		processAttribute(node->GetNodeAttributeByIndex(i), meshData);
+	}
+
+	//Recursively print the children.
+	for (int j = 0; j < node->GetChildCount(); j++) {
+		processNode(node->GetChild(j), meshData);
+	}
+	level--;
+	PrintTabs();
 }
 void processAttribute(FbxNodeAttribute *attribute, MeshData *meshData) {
-
+	if (!attribute) return;
+	FbxString typeName = GetAttributeTypeName(attribute->GetAttributeType());
+	FbxString attrName = attribute->GetName();
+	PrintTabs();
+	cout << "Attribute " << typeName.Buffer() << "Name " << attrName << endl;
+	switch (attribute->GetAttributeType()) {
+	case FbxNodeAttribute::eMesh:processMesh(attribute->GetNode()->GetMesh(), meshData);
+	case FbxNodeAttribute::eCamera:return;
+	case FbxNodeAttribute::eLight: return;
+	}
 }
 void processMesh(FbxMesh *mesh, MeshData *meshData) {
+	int numVerts = mesh->GetControlPointsCount();
+	int numIndices = mesh->GetPolygonVertexCount();
 
+	Vertex *pVerts = new Vertex[numVerts];
+	int *pIndices = mesh->GetPolygonVertices();
+
+	for (int i = 0; i < numVerts; i++) {
+		FbxVector4 currentVert = mesh->GetControlPointAt(i);
+		pVerts[i].position = vec3(currentVert[0], currentVert[1], currentVert[2]);
+		pVerts[i].colour = vec4(1.0f, 1.0f, 1.0f, 1.0f);
+		pVerts[i].texCoords = vec2(0.0f, 0.0f);
+	}
+
+	processMeshTextureCoords(mesh, pVerts, numVerts);
+
+	for (int i = 0; i < numVerts; i++) {
+		meshData->vertices.push_back(pVerts[i]);
+	}
+	for (int i = 0; i < numIndices; i++) {
+		meshData->indices.push_back(pIndices[i]);
+	}
+	cout << "Vertices " << numVerts << "indices " << numIndices << endl;
+
+	if (pVerts) {
+		delete[] pVerts;
+		pVerts = NULL;
+	}
 }
 void processMeshTextureCoords(FbxMesh *mesh, Vertex *verts, int numVerts) {
+	for (int iPolygon = 0; iPolygon < mesh->GetPolygonCount(); iPolygon++) {
+		for (unsigned iPolygonVertex = 0; iPolygonVertex < 3; iPolygonVertex++) {
+			int fbxCornerIndex = mesh->GetPolygonVertex(iPolygon, iPolygonVertex);
 
+			FbxVector2 fbxUV = FbxVector2(0.0, 0.0);
+			FbxLayerElementUV *fbxLayerUV = mesh->GetLayer(0)->GetUVs();
+			//Get texture coordinate
+			if (fbxLayerUV) {
+				int iUVindex = 0;
+				switch (fbxLayerUV->GetMappingMode()) {
+				case FbxLayerElement::eByControlPoint:
+					iUVindex = fbxCornerIndex;
+					break;
+				case FbxLayerElement::eByPolygonVertex:
+					iUVindex = mesh->GetTextureUVIndex(iPolygon,
+						iPolygonVertex,
+						FbxLayerElement::eTextureDiffuse);
+					break;
+				case FbxLayerElement::eByPolygon:
+						iUVindex = iPolygon;
+						break;
+				}
+
+				fbxUV = fbxLayerUV->GetDirectArray().GetAt(iUVindex);
+				verts[fbxCornerIndex].texCoords.x = fbxUV[0];
+				verts[fbxCornerIndex].texCoords.y = 1.0f - fbxUV[1];
+			}
+		}
+	}
 }

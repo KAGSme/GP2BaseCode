@@ -3,63 +3,9 @@
 #include "Vertices.h"
 #include "Shader.h"
 #include "Texture.h"
+#include "Mesh.h"
 #include "FileSystem.h"
-
-Vertex verts[]={
-//Front
-{ vec3(-1, 0.5f, 0.5f),
-    vec4(1.0f, 1.0f, 1.0f, 1.0f), vec2(0.0f, 0.0f)},// Top Left
-
-{ vec3(-1, -0.5f, 0.5f),
-    vec4(1.0f, 1.0f, 0.0f, 1.0f), vec2(0.0f, 1.0f)},// Bottom Left
-
-{ vec3(1, -0.5f, 0.5f),
-    vec4(1.0f, 1.0f, 1.0f, 1.0f), vec2(1.0f, 1.0f)}, //Bottom Right
-
-{ vec3(1, 0.5f, 0.5f),
-    vec4(1.0f, 1.0f, 1.0f, 1.0f), vec2(1.0f, 0.0f) },// Top Right
-
-
-//back
-{ vec3(-1, 0.5f, -0.5f),
-    vec4(1.0f, 0.0f, 1.0f, 1.0f), vec2(0.0f, 0.0f)},// Top Left
-
-{ vec3(-1, -0.5f, -0.5f),
-    vec4(1.0f, 1.0f, 0.0f, 1.0f), vec2(0.0f, 1.0f) },// Bottom Left
-
-{ vec3(1, -0.5f, -0.5f),
-    vec4(1.0f, 1.0f, 1.0f, 1.0f), vec2(1.0f, 1.0f) }, //Bottom Right
-
-{ vec3(1, 0.5f, -0.5f),
-    vec4(1.0f, 1.0f, 1.0f, 1.0f), vec2(1.0f, 0.0f) },// Top Right
-
-};
-
-GLuint indices[]={
-    //front
-    0,1,2,
-    0,3,2,
-
-    //left
-    4,5,1,
-    4,1,0,
-
-    //right
-    3,7,2,
-    7,6,2,
-
-    //bottom
-    1,5,2,
-    6,2,5,
-
-    //top
-    4,0,7,
-    0,7,3,
-
-    //back
-    4,5,6,
-    4,7,6
-};
+#include "FBXLoader.h"
 
 //matrices
 mat4 viewMatrix;
@@ -72,13 +18,17 @@ GLuint EBO;
 GLuint VAO;
 GLuint shaderProgram;
 
+MeshData currentMesh;
 GLuint textureMap;
-GLuint fontTexture;
 
 void initScene()
 {
+	//load mesh and bind it
+	string modelPath = ASSET_PATH + MODEL_PATH + "/Tank1.FBX";
+	loadFBXFromFile(modelPath, &currentMesh);
+
 	//load texture & bind it
-	string texturePath = ASSET_PATH + TEXTURE_PATH + "/texture.png";
+	string texturePath = ASSET_PATH + TEXTURE_PATH + "/Tank1DF.png";
 	textureMap = loadTextureFromFile(texturePath);
 
 	glBindTexture(GL_TEXTURE_2D, textureMap);
@@ -88,30 +38,19 @@ void initScene()
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_MIRRORED_REPEAT);
 	glGenerateMipmap(GL_TEXTURE_2D);
 
-	//load font and bind it
-	string fontTexPath = ASSET_PATH + FONT_PATH +"/OratorStd.otf";
-	fontTexture = loadTextureFromFont(fontTexPath, 20, "Hello World");
-
-	glBindTexture(GL_TEXTURE_2D, fontTexture);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_MIRRORED_REPEAT);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_MIRRORED_REPEAT);
-	glGenerateMipmap(GL_TEXTURE_2D);
-
-	//Generate Vertex Array
 	glGenVertexArrays(1,&VAO);
 	glBindVertexArray( VAO );
 	glGenBuffers(1, &VBO);
 	glBindBuffer(GL_ARRAY_BUFFER, VBO);
-	glBufferData(GL_ARRAY_BUFFER, sizeof(verts), verts, GL_STATIC_DRAW);
+
+	glBufferData(GL_ARRAY_BUFFER, currentMesh.getNumVerts()*sizeof(Vertex), &currentMesh.vertices[0], GL_STATIC_DRAW);
 
 	//create buffer
 	glGenBuffers(1, &EBO);
 	//Make the EBO active
 	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBO);
 	//Copy Index data to the EBO
-	glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(indices), indices, GL_STATIC_DRAW);
+	glBufferData(GL_ELEMENT_ARRAY_BUFFER, currentMesh.getNumIndices()*sizeof(int), &currentMesh.indices[0], GL_STATIC_DRAW);
 
 	//Tell the shader that 0 is the position element
 	glEnableVertexAttribArray(0);
@@ -152,7 +91,7 @@ void initScene()
 void cleanUp()
 {
 	glDeleteTextures(1, &textureMap);
-	glDeleteTextures(1, &fontTexture);
+
 	glDeleteProgram(shaderProgram);
 	glDeleteBuffers(1, &EBO);
 	glDeleteBuffers(1, &VBO);
@@ -190,12 +129,12 @@ void render()
 
 	GLint texture0Location = glGetUniformLocation(shaderProgram, "texture0");
 	glActiveTexture(GL_TEXTURE0);
-	glBindTexture(GL_TEXTURE_2D, fontTexture);
+	glBindTexture(GL_TEXTURE_2D, textureMap);
 	glUniform1i(texture0Location, 0);
 
     glBindVertexArray( VAO );
 
-    glDrawElements(GL_TRIANGLES, sizeof(indices)/sizeof(GLuint),GL_UNSIGNED_INT,0);
+    glDrawElements(GL_TRIANGLES, currentMesh.getNumIndices(),GL_UNSIGNED_INT,0);
 }
 
 int main(int argc, char * arg[])
