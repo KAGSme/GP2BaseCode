@@ -124,12 +124,10 @@ void processMesh(FbxMesh *mesh, MeshData *meshData) {
 
 	processMeshTextureCoords(mesh, pVerts, numVerts);
 
-	for (int i = 0; i < numVerts; i++) {
-		meshData->vertices.push_back(pVerts[i]);
-	}
-	for (int i = 0; i < numIndices; i++) {
-		meshData->indices.push_back(pIndices[i]);
-	}
+	uint initVertCount = meshData->vertices.size();
+	for (int i = 0; i < numVerts; i++)meshData->vertices.push_back(pVerts[i]);
+
+	 for (int i = 0; i < numIndices; i++)meshData->indices.push_back(initVertCount + pIndices[i]);
 	cout << "Vertices " << numVerts << "indices " << numIndices << endl;
 
 	if (pVerts) {
