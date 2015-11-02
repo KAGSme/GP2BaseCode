@@ -20,11 +20,17 @@ GLuint shaderProgram;
 
 MeshData currentMesh;
 GLuint textureMap;
+vec3 cameraTransform(0.0, 0.0, 0.0);
+vec3 cameraRotation(0.0, 0.0, 0.0);
+float mposx, mposy;
+
+vec4 ambientMaterialColour(0.3f, 0.3f, 0.3f, 1.0f);
+vec4 ambientLightColour(1.0f, 1.0f, 1.0f, 1.0f);
 
 void initScene()
 {
 	//load mesh and bind it
-	string modelPath = ASSET_PATH + MODEL_PATH + "/armoredrecon.fbx";
+	string modelPath = ASSET_PATH + MODEL_PATH + "/Utah-Teapot.fbx";
 	loadFBXFromFile(modelPath, &currentMesh);
 
 	//load texture & bind it
@@ -63,12 +69,12 @@ void initScene()
 	glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void**)((sizeof(vec3) + (sizeof(vec4)))));
 
 	GLuint vertexShaderProgram=0;
-	string vsPath = ASSET_PATH + SHADER_PATH + "/textureVS.glsl";
+	string vsPath = ASSET_PATH + SHADER_PATH + "/ambientVS.glsl";
 	vertexShaderProgram = loadShaderFromFile(vsPath, VERTEX_SHADER);
 	checkForCompilerErrors(vertexShaderProgram);
 
 	GLuint fragmentShaderProgram=0;
-	string fsPath = ASSET_PATH + SHADER_PATH + "/textureFS.glsl";
+	string fsPath = ASSET_PATH + SHADER_PATH + "/ambientFS.glsl";
 	fragmentShaderProgram = loadShaderFromFile(fsPath, FRAGMENT_SHADER);
 	checkForCompilerErrors(fragmentShaderProgram);
 
@@ -102,7 +108,7 @@ void update()
 {
   projMatrix = glm::perspective(45.0f, 640.0f / 480.0f, 0.1f, 100.0f);
 
-  viewMatrix = glm::lookAt(vec3(0.0f, 3.0f, 8.0f), vec3(0.0f, 0.0f, 0.0f), vec3(0.0f, 1.0f, 0.0f));
+  viewMatrix = glm::lookAt(cameraTransform, cameraRotation, vec3(0.0f, 1.0f, 0.0f));
 
   worldMatrix= glm::translate(mat4(1.0f), vec3(0.0f,0.0f,0.0f));
 
@@ -125,12 +131,16 @@ void render()
     GLint MVPLocation = glGetUniformLocation(shaderProgram, "MVP");
 	glUniformMatrix4fv(MVPLocation, 1, GL_FALSE, glm::value_ptr(MVPMatrix));
 
-	
+	GLint amcLocation = glGetUniformLocation(shaderProgram, "ambientMaterialColour");
+	glUniform4fv(amcLocation, 1, value_ptr(ambientMaterialColour));
 
-	GLint texture0Location = glGetUniformLocation(shaderProgram, "texture0");
+	GLint alcLocation = glGetUniformLocation(shaderProgram, "ambientLightColour");
+	glUniform4fv(alcLocation, 1, value_ptr(ambientLightColour));
+
+	/*GLint texture0Location = glGetUniformLocation(shaderProgram, "texture0");
 	glActiveTexture(GL_TEXTURE0);
 	glBindTexture(GL_TEXTURE_2D, textureMap);
-	glUniform1i(texture0Location, 0);
+	glUniform1i(texture0Location, 0);*/
 
     glBindVertexArray( VAO );
 
@@ -198,19 +208,43 @@ int main(int argc, char * arg[])
                 run = false;
             }
             if (event.type==SDL_KEYDOWN){
-                  switch( event.key.keysym.sym )
-                  {
-                    case SDLK_LEFT:
-                      break;
-                      case SDLK_RIGHT:
-                      break;
-                      case SDLK_UP:
-                      break;
-                      case SDLK_DOWN:
-                      break;
-                    default:
-                      break;
-                  }
+                switch( event.key.keysym.sym )
+                {
+					case SDLK_w:
+						cameraTransform.x += 0.5f;
+						cameraRotation.x += 0.5f;
+						break;
+					case SDLK_s:
+						cameraTransform.x -= 0.5f;
+						cameraRotation.x -= 0.5f;
+						break;
+					case SDLK_a:
+						cameraTransform.z -= 0.5f;
+						cameraRotation.z -= 0.5f;
+						break;
+					case SDLK_d:
+						cameraTransform.z += 0.5f;
+						cameraRotation.z += 0.5f;
+						break;
+					}
+				}
+				if (event.type == SDL_MOUSEMOTION) {
+					if (event.motion.x > mposx) {
+						cameraRotation.x += 0.1f;
+						mposx = event.motion.x;
+					}
+					if (event.motion.x < mposx) {
+						cameraRotation.x -= 0.1f;
+						mposx = event.motion.x;
+					}
+					if (event.motion.y > mposy) {
+						cameraRotation.y -= 0.1f;
+						mposy = event.motion.y;
+					}
+					if (event.motion.y < mposy) {
+						cameraRotation.y += 0.1f;
+						mposy = event.motion.y;
+					}
             }
         }
         //init Scene

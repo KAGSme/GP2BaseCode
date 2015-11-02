@@ -56,6 +56,9 @@ bool loadFBXFromFile(const string& filename, MeshData *meshData) {
 	//Import the contents of the file into the scene.
 	IImporter->Import(IScene);
 
+	FbxGeometryConverter iGeomConverter(ISdkManager);
+	iGeomConverter.Triangulate(IScene, /*replace*/ true);
+
 	//Process Nodes
 	FbxNode* IRootNode = IScene->GetRootNode();
 	if (IRootNode) {
