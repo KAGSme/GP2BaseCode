@@ -7,6 +7,13 @@
 #include "FileSystem.h"
 #include "FBXLoader.h"
 
+float vertices[] = {
+	-1,-1,
+	1,-1,
+	-1,1,
+	1,1
+};
+
 //matrices
 mat4 viewMatrix;
 mat4 projMatrix;
@@ -16,7 +23,16 @@ mat4 MVPMatrix;
 GLuint VBO;
 GLuint EBO;
 GLuint VAO;
+GLuint FBO;
+GLuint FBOTexture;
+GLuint FBODepthBuffer;
+GLuint FVAO;
+GLuint FVBO;
+GLuint fullscreenShaderProgram;
 GLuint shaderProgram;
+
+const int FRAME_BUFFER_WIDTH = 640;
+const int FRAME_BUFFER_HEIGHT = 480;
 
 MeshData currentMesh;
 GLuint textureMap;
@@ -34,6 +50,35 @@ float specPower = 1.0f;
 
 vec3 LightDir = vec3(0.0f, 0.0f, 1.0f);
 
+
+void createFramebuffer() {
+	glActiveTexture(GL_TEXTURE0);
+	glGenTextures(1, &FBOTexture);
+	glBindTexture(GL_TEXTURE_2D, FBOTexture);
+
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+
+	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, FRAME_BUFFER_WIDTH, FRAME_BUFFER_HEIGHT, 0, GL_RGBA, GL_UNSIGNED_BYTE, NULL);
+	glGenRenderbuffers(1, &FBODepthBuffer);
+	glBindRenderbuffer(GL_RENDERBUFFER, FBODepthBuffer);
+	glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH_COMPONENT32, FRAME_BUFFER_WIDTH, FRAME_BUFFER_HEIGHT);
+	glBindRenderbuffer(GL_RENDERBUFFER, 0);
+
+	glGenFramebuffers(1, &FBO);
+	glBindFramebuffer(GL_FRAMEBUFFER, FBO);
+	glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, FBOTexture, 0);
+	glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_RENDERBUFFER, FBODepthBuffer);
+
+	GLenum status = glCheckFramebufferStatus(GL_FRAMEBUFFER);
+
+	if(status!=GL_FRAMEBUFFER_COMPLETE){
+		cout << "Issue with Framebuffers" << endl;
+	}
+}
+
 void initScene()
 {
 	//load mesh and bind it
@@ -50,6 +95,37 @@ void initScene()
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_MIRRORED_REPEAT);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_MIRRORED_REPEAT);
 	glGenerateMipmap(GL_TEXTURE_2D);
+	
+	createFramebuffer();
+	glGenVertexArrays(1, &FVAO);
+	glBindVertexArray(FVAO);
+	glGenBuffers(1, &FVBO);
+	glBindBuffer(GL_ARRAY_BUFFER, FVBO);
+
+	glVertexPointer(2, GL_FLOAT, 0, NULL);
+
+	GLuint fvertexShaderProgram = 0;
+	string vsPath = ASSET_PATH + SHADER_PATH + "/simplePostProcessVS.glsl";
+	fvertexShaderProgram = loadShaderFromFile(vsPath, VERTEX_SHADER);
+	checkForCompilerErrors(fvertexShaderProgram);
+
+	GLuint ffragmentShaderProgram = 0;
+	string fsPath = ASSET_PATH + SHADER_PATH + "/simplePostProcessFS.glsl";
+	ffragmentShaderProgram = loadShaderFromFile(fsPath, FRAGMENT_SHADER);
+	checkForCompilerErrors(ffragmentShaderProgram);
+
+	fullscreenShaderProgram = glCreateProgram();
+	glAttachShader(fullscreenShaderProgram, fvertexShaderProgram);
+	glAttachShader(fullscreenShaderProgram, ffragmentShaderProgram);
+
+	//Link attributes
+	glBindAttribLocation(shaderProgram, 0, "vertexPosition");
+
+	glLinkProgram(fullscreenShaderProgram);
+	checkForLinkErrors(fullscreenShaderProgram);
+	//now we can delete the VS & FS Programs
+	glDeleteShader(fvertexShaderProgram);
+	glDeleteShader(ffragmentShaderProgram);
 
 	glGenVertexArrays(1,&VAO);
 	glBindVertexArray( VAO );
@@ -79,12 +155,12 @@ void initScene()
 	glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void**)((sizeof(vec3) + (sizeof(vec4)) + (sizeof(vec2)))));
 
 	GLuint vertexShaderProgram=0;
-	string vsPath = ASSET_PATH + SHADER_PATH + "/specularVS.glsl";
+	vsPath = ASSET_PATH + SHADER_PATH + "/specularVS.glsl";
 	vertexShaderProgram = loadShaderFromFile(vsPath, VERTEX_SHADER);
 	checkForCompilerErrors(vertexShaderProgram);
 
 	GLuint fragmentShaderProgram=0;
-	string fsPath = ASSET_PATH + SHADER_PATH + "/specularFS.glsl";
+    fsPath = ASSET_PATH + SHADER_PATH + "/specularFS.glsl";
 	fragmentShaderProgram = loadShaderFromFile(fsPath, FRAGMENT_SHADER);
 	checkForCompilerErrors(fragmentShaderProgram);
 
@@ -114,6 +190,8 @@ void cleanUp()
 	glDeleteVertexArrays(1,&VAO);
 }
 
+void
+
 void update()
 {
   projMatrix = glm::perspective(45.0f, 640.0f / 480.0f, 0.1f, 100.0f);
@@ -127,6 +205,7 @@ void update()
 
 void render()
 {
+	glBindFramebuffer(GL_FRAMEBUFFER, FBO);
     //old imediate mode!
     //Set the clear colour(background)
     glClearColor( 0.0f, 0.0f, 0.0f, 0.0f );
