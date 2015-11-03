@@ -123,8 +123,8 @@ void processMesh(FbxMesh *mesh, MeshData *meshData) {
 	}
 
 	processMeshTextureCoords(mesh, pVerts, numVerts);
+	processMeshNormals(mesh, pVerts, numVerts);
 
-<<<<<<< HEAD
 	uint initVertCount = meshData->vertices.size();
 	for (int i = 0; i < numVerts; i++)
 		meshData->vertices.push_back(pVerts[i]);
@@ -132,12 +132,6 @@ void processMesh(FbxMesh *mesh, MeshData *meshData) {
 	for (int i = 0; i < numIndices; i++)
 		meshData->indices.push_back(initVertCount + pIndices[i]);
 
-=======
-	uint initVertCount = meshData->vertices.size();
-	for (int i = 0; i < numVerts; i++)meshData->vertices.push_back(pVerts[i]);
-
-	 for (int i = 0; i < numIndices; i++)meshData->indices.push_back(initVertCount + pIndices[i]);
->>>>>>> refs/remotes/origin/Lab-5-working
 	cout << "Vertices " << numVerts << "indices " << numIndices << endl;
 
 	if (pVerts) {
@@ -175,6 +169,20 @@ void processMeshTextureCoords(FbxMesh *mesh, Vertex *verts, int numVerts) {
 				verts[fbxCornerIndex].texCoords.x = fbxUV[0];
 				verts[fbxCornerIndex].texCoords.y = 1.0f - fbxUV[1];
 			}
+		}
+	}
+}
+
+void processMeshNormals(FbxMesh * mesh, Vertex * verts, int numVerts) {
+	for (int iPolygon = 0; iPolygon < mesh->GetPolygonCount(); iPolygon++) {
+		for (unsigned iPolygonVertex = 0; iPolygonVertex < 3; iPolygonVertex++) {
+			int fbxCornerIndex = mesh->GetPolygonVertex(iPolygon, iPolygonVertex);
+			FbxVector4 fbxNormal;
+			mesh->GetPolygonVertexNormal(iPolygon, iPolygonVertex, fbxNormal);
+			fbxNormal.Normalize();
+			verts[fbxCornerIndex].normal.x = fbxNormal[0];
+			verts[fbxCornerIndex].normal.x = fbxNormal[0];
+			verts[fbxCornerIndex].normal.x = fbxNormal[0];
 		}
 	}
 }
