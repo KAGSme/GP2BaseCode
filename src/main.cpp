@@ -180,6 +180,16 @@ void initScene()
 	glDeleteShader(fragmentShaderProgram);
 }
 
+void cleanUpFramebuffer() {
+	glDeleteTextures(1, &FBOTexture);
+
+	glDeleteProgram(fullscreenShaderProgram);
+	glDeleteVertexArrays(1, &FVAO);
+	glDeleteBuffers(1, &FVBO);
+	glDeleteFramebuffers(1, &FBO);
+	glDeleteRenderbuffers(1, &FBODepthBuffer);
+}
+
 void cleanUp()
 {
 	glDeleteTextures(1, &textureMap);
@@ -188,9 +198,9 @@ void cleanUp()
 	glDeleteBuffers(1, &EBO);
 	glDeleteBuffers(1, &VBO);
 	glDeleteVertexArrays(1,&VAO);
-}
 
-void
+	cleanUpFramebuffer();
+}
 
 void update()
 {
@@ -203,21 +213,20 @@ void update()
   MVPMatrix=projMatrix*viewMatrix*worldMatrix;
 }
 
-void render()
-{
+void renderScene() {
 	glBindFramebuffer(GL_FRAMEBUFFER, FBO);
-    //old imediate mode!
-    //Set the clear colour(background)
-    glClearColor( 0.0f, 0.0f, 0.0f, 0.0f );
-    //clear the colour and depth buffer
-    glClear( GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT );
+	//old imediate mode!
+	//Set the clear colour(background)
+	glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
+	//clear the colour and depth buffer
+	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
 	glEnable(GL_BLEND);
 	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
-    glUseProgram(shaderProgram);
+	glUseProgram(shaderProgram);
 
-    GLint MVPLocation = glGetUniformLocation(shaderProgram, "MVP");
+	GLint MVPLocation = glGetUniformLocation(shaderProgram, "MVP");
 	glUniformMatrix4fv(MVPLocation, 1, GL_FALSE, glm::value_ptr(MVPMatrix));
 
 	GLint modelLocation = glGetUniformLocation(shaderProgram, "Model");
@@ -255,9 +264,30 @@ void render()
 	glBindTexture(GL_TEXTURE_2D, textureMap);
 	glUniform1i(texture0Location, 0);*/
 
-    glBindVertexArray( VAO );
+	glBindVertexArray(VAO);
 
-    glDrawElements(GL_TRIANGLES, currentMesh.getNumIndices(),GL_UNSIGNED_INT,0);
+	glDrawElements(GL_TRIANGLES, currentMesh.getNumIndices(), GL_UNSIGNED_INT, 0);
+}
+
+void renderPostProcess() {
+	glBindFramebuffer(GL_FRAMEBUFFER, 0);
+	glClearColor(0.0, 0.0, 0.0, 0.0);
+	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+	glUseProgram(fullscreenShaderProgram);
+
+	GLint ftexture0Location = glGetUniformLocation(fullscreenShaderProgram, "texture0");
+	glActiveTexture(GL_TEXTURE0);
+	glBindTexture(GL_TEXTURE_2D, FBOTexture);
+	glUniform1i(ftexture0Location, 0);
+
+	glBindVertexArray(FVAO);
+
+	glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
+}
+
+void render()
+{
+	renderScene();
 }
 
 int main(int argc, char * arg[])
